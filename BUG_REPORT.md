@@ -179,47 +179,47 @@ It is this:
 
 1. In session mode, the client path uses the **effective** prepared-statements setting from:
 
-```rust
-config.prepared_statements()
-```
+    ```rust
+    config.prepared_statements()
+    ```
 
 2. `ConfigAndUsers::prepared_statements()` disables prepared statements in session mode:
 
-```rust
-pub fn prepared_statements(&self) -> PreparedStatements {
-    if self.config.general.pooler_mode == PoolerMode::Session {
-        PreparedStatements::Disabled
-    } else {
-        self.config.general.prepared_statements
+    ```rust
+    pub fn prepared_statements(&self) -> PreparedStatements {
+        if self.config.general.pooler_mode == PoolerMode::Session {
+            PreparedStatements::Disabled
+        } else {
+            self.config.general.prepared_statements
+        }
     }
-}
-```
+    ```
 
 3. The mirror path was not using that effective value. It constructed its prepared-statement state with the raw default/configured level instead.
 
 4. So with:
 
-```toml
-pooler_mode = "session"
-prepared_statements = "extended"
-```
+    ```toml
+    pooler_mode = "session"
+    prepared_statements = "extended"
+    ```
 
-the source/client path effectively ran with `Disabled`, while the mirror path still ran with `Extended`.
+    the source/client path effectively ran with `Disabled`, while the mirror path still ran with `Extended`.
 
 5. That caused the mirror path to rewrite extended-protocol prepared statement names to `__pgdog_*`, while the source path kept the original PDO names like `pdo_stmt_00000001`.
 
 6. Later, PDO sent simple SQL cleanup:
 
-```sql
-DEALLOCATE pdo_stmt_00000001
-```
+    ```sql
+    DEALLOCATE pdo_stmt_00000001
+    ```
 
 7. The mirror backend only knew the prepared statement under the rewritten `__pgdog_*` name, so PostgreSQL correctly errored:
 
-```text
-ERROR:  prepared statement "pdo_stmt_00000001" does not exist
-STATEMENT:  DEALLOCATE pdo_stmt_00000001
-```
+    ```text
+    ERROR:  prepared statement "pdo_stmt_00000001" does not exist
+    STATEMENT:  DEALLOCATE pdo_stmt_00000001
+    ```
 
 ## Important Control Cases
 
