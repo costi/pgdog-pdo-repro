@@ -1,0 +1,25 @@
+[general]
+host = "0.0.0.0"
+port = 5432
+pooler_mode = "session"
+workers = 1
+default_pool_size = 100
+prepared_statements = "extended"
+
+[[databases]]
+name = "app"
+host = "postgres"
+port = 5432
+database_name = "app"
+
+[[databases]]
+name = "app_mirror"
+host = "postgres_mirror"
+port = 5432
+database_name = "app"
+
+[[mirroring]]
+source_db = "app"
+destination_db = "app_mirror"
+exposure = 1
+queue_length = 12048

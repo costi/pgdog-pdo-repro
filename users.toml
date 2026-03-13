@@ -1,0 +1,9 @@
+[[users]]
+name = "app"
+database = "app"
+password = "app"
+
+[[users]]
+name = "app"
+database = "app_mirror"
+password = "app"
